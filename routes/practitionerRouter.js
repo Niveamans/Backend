@@ -1,7 +1,6 @@
 import {
   createPractitionerResource,
   getPractitionerResource,
-  patchPractitionerResource,
   deletePractitionerResource,
   getAllPatientsOf,
 } from "../controllers/practitionerController.js";
@@ -12,12 +11,11 @@ const router = express.Router();
 router.route("/").post(createPractitionerResource);
 router
   .route("/:id")
-  .put(patchPractitionerResource)
   .get((req, res) => {
     if (req.headers.function === "getDoctor") {
-      getPractitionerResource;
+      getPractitionerResource(req, res);
     } else if (req.headers.function === "getPatients") {
-      getAllPatientsOf;
+      getAllPatientsOf(req, res);
     }
   })
   .delete(deletePractitionerResource);
