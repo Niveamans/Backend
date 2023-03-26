@@ -7,10 +7,10 @@ const healthcare = google.healthcare({
   headers: { "Content-Type": "application/fhir+json" },
 });
 
-const parent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Patient`;
+const parent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Practitioner`;
 const ogParent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore`;
 
-export const createPatientResource = async (req, res) => {
+export const createPractitionerResource = async (req, res) => {
   const { name, gender, birthDate } = req.body;
   // create.
   const body = {
@@ -19,14 +19,14 @@ export const createPatientResource = async (req, res) => {
     ],
     gender: gender,
     birthDate: birthDate,
-    resourceType: "Patient",
+    resourceType: "Practitioner",
   };
 
-  const request = { ogParent, type: resourceType, requestBody: body };
+  const request = { ogParent, type: "Practitioner", requestBody: body };
   const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
     .create(request)
     .then((v) => {
-      console.log(`Created patient resource with ID ${v.data.id}`);
+      console.log(`Created practitioner resource with ID ${v.data.id}`);
       console.log(v.data);
       res.status(200).send(JSON.stringify(v));
     })
@@ -38,7 +38,9 @@ export const createPatientResource = async (req, res) => {
     });
 };
 
-export const patchPatientResource = async (req, res) => {
+//The request must contain a JSON patch document, and the request headers must contain Content-Type: application/json-patch+json.
+
+export const patchPractitionerResource = async (req, res) => {
   const resourceId = req.body.resourceId;
   const patchOptions = JSON.parse(req.body.patchOptions);
   const name = parent.concat("/", resourceId);
@@ -61,7 +63,7 @@ export const patchPatientResource = async (req, res) => {
     });
 };
 
-export const getPatientResource = async (req, res) => {
+export const getPractitionerResource = async (req, res) => {
   const resourceId = req.body.resourceId;
   const name = parent.concat("/", resourceId);
   const request = { name };
@@ -80,30 +82,7 @@ export const getPatientResource = async (req, res) => {
     });
 };
 
-export const getPatientEverything = async (req, res) => {
-  const patientId = req.body.patientId;
-  const name = parent.concat("/", patientId);
-  const request = { name };
-
-  const patientEverything =
-    await healthcare.projects.locations.datasets.fhirStores.fhir
-      .PatientEverything(request)
-      .then((v) => {
-        console.log(
-          `Got all resources in patient ${patientId} compartment:\n`,
-          JSON.stringify(patientEverything)
-        );
-        res.status(200).send(JSON.stringify(v));
-      })
-      .catch((e) => {
-        console.log(e);
-        res.send(500).send({
-          message: "unknown error",
-        });
-      });
-};
-
-export const deletePatientResource = async (req, res) => {
+export const deletePractitionerResource = async (req, res) => {
   const resourceId = req.body.resourceId;
   const name = parent.concat("/", resourceId);
   const request = { name };
@@ -117,6 +96,30 @@ export const deletePatientResource = async (req, res) => {
     .then((v) => {
       console.log("Deleted FHIR resource");
       res.status(200).send(JSON.stringify(v));
+    })
+    .catch((e) => {
+      console.log(e);
+      res.send(500).send({
+        message: "unknown error",
+      });
+    });
+};
+
+export const getAllPatientsOf = async (req, res) => {
+  const patientIds = JSON.parse(req.patientIds)
+    .map((id) => `'${id}'`)
+    .join(",");
+
+  const params = { "_id:in": `${patientIds}` };
+
+  const client = await auth.getClient();
+  const response = await client
+    .request({ parent, method: "GET", params })
+    .then((v) => {
+      const resources = v.data.entry;
+      console.log(`Resources found: ${resources.length}`);
+      console.log(JSON.stringify(resources, null, 2));
+      res.status(200).send(JSON.stringify(resources));
     })
     .catch((e) => {
       console.log(e);
