@@ -41,30 +41,40 @@ export const createPatientResource = async (req, res) => {
 
 //The request must contain a JSON patch document, and the request headers must contain Content-Type: application/json-patch+json.
 
-// export const patchPatientResource = async (req, res) => {
-//   const resourceId = req.params.id;
-//   const patchOptions = req.body;
+export const patchPatientResource = async (req, res) => {
+  const resourceId = req.params.id;
 
-//   console.log(patchOptions);
-//   const name = parent.concat("/", resourceId).trim();
-//   const request = {
-//     name,
-//     requestBody: patchOptions,
-//   };
+  const patchOptions = [
+    { op: req.body.op, path: req.body.path, value: req.body.value },
+  ];
 
-//   const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
-//     .patch(request)
-//     .then((v) => {
-//       console.log(`Patched ${resourceType} resource`);
-//       res.status(204).send(JSON.stringify(v.data));
-//     })
-//     .catch((e) => {
-//       console.log(e);
-//       res.status(500).send({
-//         message: "unknown error",
-//       });
-//     });
-// };
+  // console.log(patchOptions);
+  // console.log(req.headers);
+  // console.log(req.body);
+
+  const name = parent.concat("/", resourceId).trim();
+  const request = {
+    name,
+    requestBody: patchOptions,
+  };
+
+  const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
+    .patch(request, {
+      headers: {
+        "Content-Type": "application/json-patch+json",
+      },
+    })
+    .then((v) => {
+      console.log(`Patched resource`);
+      res.status(204).send(JSON.stringify(v.data));
+    })
+    .catch((e) => {
+      console.log(e);
+      res.status(500).send({
+        message: "unknown error",
+      });
+    });
+};
 
 export const getPatientResource = async (req, res) => {
   const resourceId = req.params.id;
