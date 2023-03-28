@@ -19,6 +19,7 @@
   "homepage": "https://github.com/AMC-website/Backend#readme",
   "dependencies": {
     "@google-cloud/storage": "^6.9.4",
+    "@googleapis/healthcare": "^6.0.2",
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.1",
     "cors": "^2.8.5",
