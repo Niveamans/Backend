@@ -7,6 +7,7 @@ const healthcare = google.healthcare({
   headers: { "Content-Type": "application/fhir+json" },
 });
 
+
 const parent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Patient`;
 const ogParent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore`;
 
