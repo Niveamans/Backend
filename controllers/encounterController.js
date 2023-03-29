@@ -11,18 +11,13 @@ const parent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHealt
 const ogParent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore`;
 
 export const createEncounterResource = async (req, res) => {
-  console.log(req.body);
-  const { status, subject, period } = req.body;
+  // only include status and subject
+  const { status, subject } = JSON.parse(req.body);
+
   const encounter = {
-    resourceType: "Encounter",
     status: status,
-    subject: {
-      reference: subject.reference,
-    },
-    period: {
-      start: period.start,
-      end: period.end,
-    },
+    subject: subject,
+    resourceType: "Encounter",
   };
 
   const request = {
@@ -39,7 +34,7 @@ export const createEncounterResource = async (req, res) => {
       res.status(200).send(JSON.stringify(v.data));
     })
     .catch((e) => {
-      console.log(e);
+      console.log(e.message);
       res.status(500).send({
         message: "unknown error",
       });
@@ -50,7 +45,11 @@ export const updateEncounterResource = async (req, res) => {
   const resourceId = req.params.id;
   const name = parent.concat("/", resourceId).trim();
 
-  const body = { resourceType: "Encounter", id: resourceId, active: true };
+  const body = {
+    resourceType: "Encounter",
+    id: resourceId,
+    status: "finished",
+  };
   const request = { name, requestBody: body };
 
   const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
@@ -60,7 +59,7 @@ export const updateEncounterResource = async (req, res) => {
       res.status(200).send(JSON.stringify(v.data));
     })
     .catch((e) => {
-      console.log(e);
+      console.log(e.message);
       res.status(500).send({
         message: "unknown error",
       });
@@ -68,22 +67,30 @@ export const updateEncounterResource = async (req, res) => {
 };
 
 export const patchEncounterResource = async (req, res) => {
+  // make sure patch request is formatted properly
   const resourceId = req.params.id;
-  const patchOptions = JSON.parse(req.body.patchOptions);
   const name = parent.concat("/", resourceId).trim();
+  const patchOptions = [
+    { op: req.body[0].op, path: req.body[0].path, value: req.body[0].value },
+  ];
+
   const request = {
     name,
     requestBody: patchOptions,
   };
 
   const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
-    .patch(request)
+    .patch(request, {
+      headers: {
+        "Content-Type": "application/json-patch+json",
+      },
+    })
     .then((v) => {
       console.log(`Patched Encounter resource`);
       res.status(200).send(JSON.stringify(v.data));
     })
     .catch((e) => {
-      console.log(e);
+      console.log(e.message);
       res.status(500).send({
         message: "unknown error",
       });
@@ -99,11 +106,11 @@ export const getEncounterResource = async (req, res) => {
     .read(request)
     .then((v) => {
       console.log(`Got Encounter resource:\n`, v.data);
-      req.status(200).send(JSON.stringify(v.data));
+      res.status(200).send(JSON.stringify(v.data));
     })
     .catch((e) => {
       console.log(e);
-      req.status(500).send({
+      res.status(500).send({
         message: "unknown error",
       });
     });

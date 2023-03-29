@@ -3,6 +3,7 @@ import {
   getPatientResource,
   deletePatientResource,
   getPatientEverything,
+  patchPatientResource,
 } from "../controllers/patientController.js";
 import express from "express";
 
@@ -18,6 +19,7 @@ router
       getPatientEverything(req, res);
     }
   })
+  .patch(patchPatientResource)
   .delete(deletePatientResource);
 
 export default router;

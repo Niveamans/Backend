@@ -38,28 +38,34 @@ export const createPractitionerResource = async (req, res) => {
 
 //The request must contain a JSON patch document, and the request headers must contain Content-Type: application/json-patch+json.
 
-// export const patchPractitionerResource = async (req, res) => {
-//   const resourceId = req.params.resourceId;
-//   const patchOptions = JSON.parse(req.body);
-//   const name = parent.concat("/", resourceId);
-//   const request = {
-//     name,
-//     requestBody: patchOptions,
-//   };
+export const patchPractitionerResource = async (req, res) => {
+  const resourceId = req.params.id;
+  const patchOptions = [
+    { op: req.body.op, path: req.body.path, value: req.body.value },
+  ];
+  const name = parent.concat("/", resourceId).trim();
+  const request = {
+    name,
+    requestBody: patchOptions,
+  };
 
-//   const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
-//     .patch(request)
-//     .then((v) => {
-//       console.log(`Patched ${resourceType} resource`);
-//       res.status(204).send(JSON.stringify(v.data));
-//     })
-//     .catch((e) => {
-//       console.log(e);
-//       res.send(500).send({
-//         message: "unknown error",
-//       });
-//     });
-// };
+  const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
+    .patch(request, {
+      headers: {
+        "Content-Type": "application/json-patch+json",
+      },
+    })
+    .then((v) => {
+      console.log(`Patched resource`);
+      res.status(204).send(JSON.stringify(v.data));
+    })
+    .catch((e) => {
+      console.log(e);
+      res.status(500).send({
+        message: "unknown error",
+      });
+    });
+};
 
 export const getPractitionerResource = async (req, res) => {
   const resourceId = req.params.id;
@@ -103,26 +109,27 @@ export const deletePractitionerResource = async (req, res) => {
     });
 };
 
-export const getAllPatientsOf = async (req, res) => {
-  const patientIds = JSON.parse(req.body.patientIds)
-    .map((id) => `'${id}'`)
-    .join(",");
+// export const getAllPatientsOf = async (req, res) => {
+//   const patientIds = JSON.parse(req.body.patientIds)
+//     .map((id) => `'${id}'`)
+//     .join(",")
+//     .trim();
 
-  const params = { "_id:in": `${patientIds}` };
+//   const params = { "_id:in": `${patientIds}` };
 
-  const client = await auth.getClient();
-  const response = await client
-    .request({ parent, method: "GET", params })
-    .then((v) => {
-      const resources = v.data.entry;
-      console.log(`Resources found: ${resources.length}`);
-      console.log(JSON.stringify(resources, null, 2));
-      res.status(200).send(JSON.stringify(resources));
-    })
-    .catch((e) => {
-      console.log(e);
-      res.status(500).send({
-        message: "unknown error",
-      });
-    });
-};
+//   const client = await auth.getClient();
+//   const response = await client
+//     .request({ parent, method: "GET", params })
+//     .then((v) => {
+//       const resources = v.data.entry;
+//       console.log(`Resources found: ${resources.length}`);
+//       console.log(JSON.stringify(resources, null, 2));
+//       res.status(200).send(JSON.stringify(resources));
+//     })
+//     .catch((e) => {
+//       console.log(e);
+//       res.status(500).send({
+//         message: "unknown error",
+//       });
+//     });
+// };
