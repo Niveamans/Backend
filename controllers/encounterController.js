@@ -12,7 +12,10 @@ const ogParent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHea
 
 export const createEncounterResource = async (req, res) => {
   // only include status and subject
-  const { status, subject } = JSON.parse(req.body);
+
+  console.log(req.body);
+
+  const { status, subject } = req.body;
 
   const encounter = {
     status: status,

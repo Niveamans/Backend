@@ -18,5 +18,3 @@ router
   .delete(deleteEncounterResource);
 
 export default router;
-
-export default router;
