@@ -12,7 +12,8 @@ const ogParent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHea
 
 export const createEncounterResource = async (req, res) => {
   // only include status and subject
-  const { status, subject } = JSON.parse(req.body);
+
+  const { status, subject } = req.body;
 
   const encounter = {
     status: status,
@@ -34,6 +35,7 @@ export const createEncounterResource = async (req, res) => {
       res.status(200).send(JSON.stringify(v.data));
     })
     .catch((e) => {
+      console.log(e);
       console.log(e.message);
       res.status(500).send({
         message: "unknown error",

@@ -13,236 +13,147 @@ const projectId = "ehealth-record-01";
 const datasetId = "eHealthRecordDataset";
 const dicomStoreId = "myDicomStore";
 
-async function createStudy() {
-  const parent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}`;
+const parent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}`;
 
-  const request = {
-    parent: parent,
-    requestBody: {
-      patientId: "1234",
-      studyId: "5678",
-      startedTime: {
-        seconds: Math.floor(Date.now() / 1000),
+export async function uploadInstance(req, res) {
+  try {
+    const instance = fs.readFileSync("C:Users/viswa/Downloads/0002.DCM");
+    const instanceBytes = Buffer.from(instance).toString("base64");
+
+    const studyRequest = {
+      parent: parent,
+      requestBody: {
+        patientId: "1234",
+        studyId: "5678",
+        startedTime: {
+          seconds: Math.floor(Date.now() / 1000),
+        },
       },
-    },
-  };
+    };
 
-  const study =
-    await healthcare.projects.locations.datasets.dicomStores.studies.create(
-      request
-    );
+    const study =
+      await healthcare.projects.locations.datasets.dicomStores.studies.create(
+        studyRequest
+      );
 
-  return study.data.studyId;
+    const seriesParent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}/dicomWeb/studies/${study.data.studyId}`;
+
+    const seriesRequest = {
+      parent: seriesParent,
+      requestBody: {
+        seriesInstanceUid: `1`,
+        modality: "CT",
+        seriesDescription: "CT Abdomen",
+      },
+    };
+
+    const series =
+      await healthcare.projects.locations.datasets.dicomStores.studies.series.create(
+        seriesRequest
+      );
+
+    const instanceParent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}/dicomWeb/studies/${study.data.studyId}/series/${series.data.seriesId}`;
+
+    const request = {
+      parent: instanceParent,
+      requestBody: {
+        instance: {
+          content: instanceBytes,
+          transferSyntax: "1.2.840.10008.1.2.1", // Implicit VR Little Endian
+        },
+        headers: {
+          "Content-Type": "application/dicom",
+        },
+        queryParams: {
+          BodyPartExamined: "Abdomen",
+        },
+      },
+    };
+
+    const instanceResult =
+      await healthcare.projects.locations.datasets.dicomStores.studies.series.instances.store(
+        request
+      );
+
+    console.log(`Uploaded instance with ID ${instanceResult.data.instanceId}`);
+
+    res.status(200).send({
+      message: `successfully added dicom instance of Id ${instanceResult.data.instanceId} to study ${study.data.studyId} and series ${series.data.seriesId}`,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({
+      message: "unknown error occurred",
+    });
+  }
 }
 
-async function createSeries() {
-  const parent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}/dicomWeb/studies/${STUDY_UID}`;
-
-  const request = {
-    parent: parent,
-    requestBody: {
-      seriesInstanceUid: "1.2.3.4.5",
-      modality: "CT",
-      seriesDescription: "CT Abdomen",
-    },
-  };
-
-  const series =
-    await healthcare.projects.locations.datasets.dicomStores.studies.series.create(
-      request
-    );
-
-  console.log(`Created series with ID ${series.data.seriesInstanceUid}`);
-}
-
-async function uploadInstance() {
-  const parent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}/dicomWeb/studies/${STUDY_UID}/series/${SERIES_UID}`;
-
-  const instance = fs.readFileSync("/path/to/dicom/file.dcm");
-  const instanceBytes = Buffer.from(instance).toString("base64");
-
-  const request = {
-    parent: parent,
-    requestBody: {
-      instance: {
-        content: instanceBytes,
-        transferSyntax: "1.2.840.10008.1.2.1", // Implicit VR Little Endian
-      },
-      headers: {
-        "Content-Type": "application/dicom",
-      },
-      queryParams: {
-        BodyPartExamined: "Abdomen",
-      },
-    },
-  };
-
-  const response =
-    await healthcare.projects.locations.datasets.dicomStores.studies.series.instances.store(
-      request
-    );
-
-  console.log(`Uploaded instance with ID ${response.data.instanceId}`);
-}
-
-// export const dicomWebStoreInstance = async (req, res) => {
-//   //   TODO(developer): uncomment these lines before running the sample
-
-//   const dcmFile = "file.dcm";
-//   const parent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}`;
-//   const dicomWebPath = "studies";
-//   // Use a stream because other types of reads overwrite the client's HTTP
-//   // headers and cause storeInstances to fail.
-//   const binaryData = fs.createReadStream(dcmFile);
-//   const request = {
-//     parent,
-//     dicomWebPath,
-//     requestBody: binaryData,
-//   };
-
-//   const instance =
-//     await healthcare.projects.locations.datasets.dicomStores.storeInstances(
-//       request,
-//       {
-//         headers: {
-//           "Content-Type": "application/dicom",
-//           Accept: "application/dicom+json",
-//         },
-//       }
-//     );
-//   console.log("Stored DICOM instance:\n", JSON.stringify(instance.data));
+// const studyRequest = {
+//   parent: parent,
+//   requestBody: {
+//     patientId: "1234",
+//     studyId: "5678",
+//     startedTime: {
+//       seconds: Math.floor(Date.now() / 1000),
+//     },
+//   },
 // };
 
-// Searches
+// // async function uploadInstance(req, res) {
+// //   const instance = fs.readFileSync("/path/to/dicom/file.dcm");
+// //   const instanceBytes = Buffer.from(instance).toString("base64");
 
-const dicomWebSearchForInstances = async () => {
-  const parent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}`;
-  const dicomWebPath = "instances";
-  const request = { parent, dicomWebPath };
+// //   const study = await healthcare.projects.locations.datasets.dicomStores.studies
+// //     .create(studyRequest)
+// //     .then(async (v) => {
+// //       const seriesParent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}/dicomWeb/studies/${v.data.studyId}`;
 
-  const instances =
-    await healthcare.projects.locations.datasets.dicomStores.searchForInstances(
-      request,
-      {
-        headers: { Accept: "application/dicom+json,multipart/related" },
-      }
-    );
-  console.log(`Found ${instances.data.length} instances:`);
-  console.log(JSON.stringify(instances.data));
-};
+// //       const seriesRequest = {
+// //         parent: seriesParent,
+// //         requestBody: {
+// //           seriesInstanceUid: `${v.data.studyId}`,
+// //           modality: "CT",
+// //           seriesDescription: "CT Abdomen",
+// //         },
+// //       };
 
-const dicomWebSearchStudies = async () => {
-  const parent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}`;
-  const dicomWebPath = "studies";
-  const request = { parent, dicomWebPath };
+// //       const series =
+// //         await healthcare.projects.locations.datasets.dicomStores.studies.series
+// //           .create(seriesRequest)
+// //           .then(async (v) => {
+// //             const request = {
+// //               parent: seriesParent.concat("/", v.data.seriesId).trim(),
+// //               requestBody: {
+// //                 instance: {
+// //                   content: instanceBytes,
+// //                   transferSyntax: "1.2.840.10008.1.2.1", // Implicit VR Little Endian
+// //                 },
+// //                 headers: {
+// //                   "Content-Type": "application/dicom",
+// //                 },
+// //                 queryParams: {
+// //                   BodyPartExamined: "Abdomen",
+// //                 },
+// //               },
+// //             };
 
-  const studies =
-    await healthcare.projects.locations.datasets.dicomStores.searchForStudies(
-      request,
-      {
-        // Refine your search by appending DICOM tags to the
-        // request in the form of query parameters. This sample
-        // searches for studies containing a patient's name.
-        params: { PatientName: "Sally Zhang" },
-        headers: { Accept: "application/dicom+json" },
-      }
-    );
-  console.log(studies);
+// //             const response =
+// //               await healthcare.projects.locations.datasets.dicomStores.studies.series.instances
+// //                 .store(request)
+// //                 .then((v) => {
+// //                   res.status(200).send({
+// //                     message: "successfully added dicom instance",
+// //                   });
+// //                 })
+// //                 .catch((e) => {
+// //                   console.log(e);
 
-  console.log(`Found ${studies.data.length} studies:`);
-  console.log(JSON.stringify(studies.data));
-};
+// //                   res.status(500).send({
+// //                     message: "unknown error occurred",
+// //                   });
+// //                 });
+// //           });
+// //     });
 
-const writeFile = util.promisify(fs.writeFile);
-// When specifying the output file, use an extension like ".multipart."
-// Then, parse the downloaded multipart file to get each individual
-// DICOM file.
-
-const dicomWebRetrieveStudy = async () => {
-  const fileName = "study_file.multipart";
-
-  // const studyUid = '1.3.6.1.4.1.5062.55.1.2270943358.716200484.1363785608958.61.0';
-  const parent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}`;
-  const dicomWebPath = `studies/${studyUid}`;
-  const request = { parent, dicomWebPath };
-
-  const study =
-    await healthcare.projects.locations.datasets.dicomStores.studies.retrieveStudy(
-      request,
-      {
-        headers: {
-          Accept:
-            "multipart/related; type=application/dicom; transfer-syntax=*",
-        },
-        responseType: "arraybuffer",
-      }
-    );
-
-  const fileBytes = Buffer.from(study.data);
-
-  await writeFile(fileName, fileBytes);
-  console.log(`Retrieved study and saved to ${fileName} in current directory`);
-};
-
-const dicomWebRetrieveInstance = async () => {
-  const fileName = "instance_file.dcm";
-
-  // const studyUid = '1.3.6.1.4.1.5062.55.1.2270943358.716200484.1363785608958.61.0';
-  // const seriesUid = '2.24.52329571877967561426579904912379710633';
-  // const instanceUid = '1.3.6.2.4.2.14619.5.2.1.6280.6001.129311971280445372188125744148';
-  const parent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}`;
-  const dicomWebPath = `studies/${studyUid}/series/${seriesUid}/instances/${instanceUid}`;
-  const request = { parent, dicomWebPath };
-
-  const instance =
-    await healthcare.projects.locations.datasets.dicomStores.studies.series.instances.retrieveInstance(
-      request,
-      {
-        headers: { Accept: "application/dicom; transfer-syntax=*" },
-        responseType: "arraybuffer",
-      }
-    );
-  const fileBytes = Buffer.from(instance.data);
-
-  await writeFile(fileName, fileBytes);
-  console.log(
-    `Retrieved DICOM instance and saved to ${fileName} in current directory`
-  );
-};
-
-const dicomWebRetrieveRendered = async () => {
-  const fileName = "rendered_image.png";
-  // const studyUid = '1.3.6.1.4.1.5062.55.1.2270943358.716200484.1363785608958.61.0';
-  // const seriesUid = '2.24.52329571877967561426579904912379710633';
-  // const instanceUid = '1.3.6.2.4.2.14619.5.2.1.6280.6001.129311971280445372188125744148';
-  const parent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}`;
-  const dicomWebPath = `studies/${studyUid}/series/${seriesUid}/instances/${instanceUid}/rendered`;
-  const request = { parent, dicomWebPath };
-
-  const rendered =
-    await healthcare.projects.locations.datasets.dicomStores.studies.series.instances.retrieveRendered(
-      request,
-      {
-        headers: { Accept: "image/png" },
-        responseType: "arraybuffer",
-      }
-    );
-  const fileBytes = Buffer.from(rendered.data);
-
-  await writeFile(fileName, fileBytes);
-  console.log(
-    `Retrieved rendered image and saved to ${fileName} in current directory`
-  );
-};
-
-const dicomWebDeleteStudy = async () => {
-  // const studyUid = '1.3.6.1.4.1.5062.55.1.2270943358.716200484.1363785608958.61.0';
-  const parent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}`;
-  const dicomWebPath = `studies/${studyUid}`;
-  const request = { parent, dicomWebPath };
-
-  await healthcare.projects.locations.datasets.dicomStores.studies.delete(
-    request
-  );
-  console.log("Deleted DICOM study");
-};
+// //   console.log(`Uploaded instance with ID ${response.data.instanceId}`);
+// // }
