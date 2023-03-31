@@ -37,6 +37,7 @@ export const createEncounterResource = async (req, res) => {
       res.status(200).send(JSON.stringify(v.data));
     })
     .catch((e) => {
+      console.log(e);
       console.log(e.message);
       res.status(500).send({
         message: "unknown error",
