@@ -88,6 +88,38 @@ export async function uploadInstance(req, res) {
   }
 }
 
+//rewrite the study, series and instance according to the ones generated from the prev function
+
+const studyId = "5678";
+const seriesId = "5678";
+const instanceId = "91011";
+
+async function downloadInstance() {
+  try {
+    const instanceName = `${parent}/dicomWeb/studies/${studyId}/series/${seriesId}/instances/${instanceId}`;
+    const response =
+      await healthcare.projects.locations.datasets.dicomStores.dicomWeb.instances.retrieve(
+        {
+          name: instanceName,
+          alt: "media",
+        }
+      );
+
+    const contentDisposition = response.headers["content-disposition"];
+    const filenameMatch = contentDisposition.match(/filename="(.*?)"/);
+    const filename = filenameMatch ? filenameMatch[1] : "unnamed.dcm";
+    const instanceData = response.data;
+
+    // Save the instance data to a file
+    const fs = require("fs");
+    fs.writeFileSync(filename, instanceData, "binary");
+
+    console.log(`DICOM instance saved to ${filename}`);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 // const studyRequest = {
 //   parent: parent,
 //   requestBody: {
