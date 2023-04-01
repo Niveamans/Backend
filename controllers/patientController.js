@@ -140,3 +140,27 @@ export const deletePatientResource = async (req, res) => {
       });
     });
 };
+
+export const getAllEncounters = async (req, res) => {
+  try {
+    const client = await auth.getClient();
+    const request = {
+      parent: ogParent,
+      resourceType: "Encounter",
+      query: `subject=Patient/${req.params.id}&_tag=encounter`,
+    };
+    const response =
+      await healthcare.projects.locations.datasets.fhirStores.fhir.search(
+        request
+      );
+
+    const encounters = response.data.entry.map((entry) => entry.resource);
+
+    res.status(204).send(JSON.stringify(encounters));
+  } catch (e) {
+    console.log(e);
+    res.status(500).send({
+      message: "there was an unexpected error",
+    });
+  }
+};
