@@ -7,8 +7,8 @@ import morgan from "morgan";
 import patientRouter from "./routes/patientRouter.js";
 import practitionerRouter from "./routes/practitionerRouter.js";
 import encounterRouter from "./routes/encounterRouter.js";
-import Router from "./routes/observations.js"
-
+import ObsRouter from "./routes/observations.js"
+import dicomRouter from "./routes/dicomRouter.js"
 
 /* CONFIGURATIONS */
 const app = express();
@@ -27,7 +27,8 @@ app.use(morgan("common"));
 app.use("/patients", patientRouter);
 app.use("/practitioners", practitionerRouter);
 app.use("/encounters", encounterRouter);
-app.use("/observations",Router)
+app.use("/observations",ObsRouter)
+app.use("dicom",dicomRouter)
 app.listen(3000, () => {
   console.log("server is running on port 3000");
 });

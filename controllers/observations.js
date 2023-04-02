@@ -3,6 +3,11 @@ import fetch from 'node-fetch';
 import dotenv from "dotenv";
 import { observationBody,ObservationPatchBody } from "../data.js";
 dotenv.config()
+
+// const auth =  google.auth.getAccessToken()
+
+
+
 // const healthcare = google.healthcare({
 //   version: "v1",
 //   auth: new google.auth.GoogleAuth({
@@ -55,7 +60,8 @@ const body1={
 // const query = Patient?family:exact=Smith
 
 export const getAllObservations = async( req, res)=>{
- const response = await fetch('https://healthcare.googleapis.com/v1/projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Observation', {
+//  console.log(auth);
+  const response = await fetch(`https://healthcare.googleapis.com/v1/projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Observation`, {
     method: 'GET',
     headers: {
         'Authorization': `Bearer ${process.env.TOKEN}`,
