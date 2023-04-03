@@ -11,12 +11,11 @@ const parent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHealt
 const ogParent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore`;
 
 export const createPractitionerResource = async (req, res) => {
-  const { name, gender, birthDate } = JSON.parse(req.body);
+  const { name, gender } = req.body;
   // create.
   const body = {
     name: name,
     gender: gender,
-    birthDate: birthDate,
     resourceType: "Practitioner",
   };
 

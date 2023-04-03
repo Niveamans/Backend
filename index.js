@@ -27,8 +27,8 @@ app.use(morgan("common"));
 app.use("/patients", patientRouter);
 app.use("/practitioners", practitionerRouter);
 app.use("/encounters", encounterRouter);
+app.use("/dicom", dicomRouter);
 app.use("/observations",ObsRouter)
-app.use("dicom",dicomRouter)
 app.listen(3000, () => {
   console.log("server is running on port 3000");
 });

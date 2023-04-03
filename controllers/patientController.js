@@ -12,7 +12,7 @@ const parent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHealt
 const ogParent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore`;
 
 export const createPatientResource = async (req, res) => {
-  const { name, gender, birthDate } = JSON.parse(req.body);
+  const { name, gender } = req.body;
 
   console.log(name);
 
@@ -20,7 +20,6 @@ export const createPatientResource = async (req, res) => {
   const body = {
     name: name,
     gender: gender,
-    birthDate: birthDate,
     resourceType: "Patient",
   };
 
@@ -141,4 +140,28 @@ export const deletePatientResource = async (req, res) => {
         message: "unknown error",
       });
     });
+};
+
+export const getAllEncounters = async (req, res) => {
+  try {
+    const client = await auth.getClient();
+    const request = {
+      parent: ogParent,
+      resourceType: "Encounter",
+      query: `subject=Patient/${req.params.id}&_tag=encounter`,
+    };
+    const response =
+      await healthcare.projects.locations.datasets.fhirStores.fhir.search(
+        request
+      );
+
+    const encounters = response.data.entry.map((entry) => entry.resource);
+
+    res.status(204).send(JSON.stringify(encounters));
+  } catch (e) {
+    console.log(e);
+    res.status(500).send({
+      message: "there was an unexpected error",
+    });
+  }
 };

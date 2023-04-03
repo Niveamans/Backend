@@ -1,8 +1,19 @@
-import express from "express";
+// import { uploadInstance } from "../controllers/dicomController.js";
+// import { dicomWebStoreInstance } from "../controllers/dicom.js";
 import { sendDicom } from "../controllers/dicom.js";
 
-const Router = express.Router();
+import express from "express";
 
-Router.post("/",sendDicom)
+const router = express.Router();
 
-export default Router;
+router.route("/").post(sendDicom);
+
+export default router;
+// import express from "express";
+// import { sendDicom } from "../controllers/dicom.js";
+
+// const Router = express.Router();
+
+// Router.post("/",sendDicom)
+
+// export default Router;
