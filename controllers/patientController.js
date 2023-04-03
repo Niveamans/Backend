@@ -7,6 +7,7 @@ const healthcare = google.healthcare({
   headers: { "Content-Type": "application/fhir+json" },
 });
 
+
 const parent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Patient`;
 const ogParent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore`;
 
@@ -28,6 +29,35 @@ export const createPatientResource = async (req, res) => {
     .then((v) => {
       console.log(`Created patient resource with ID ${v.data.id}`);
       console.log(v.data);
+      res.status(200).send(JSON.stringify(v.data));
+    })
+    .catch((e) => {
+      console.log(e);
+      res.status(500).send({
+        message: "unknown error",
+      });
+    });
+};
+
+export const updatePatientResource = async (req, res) => {
+  const resourceId = req.params.id;
+  const name = parent.concat("/", resourceId).trim();
+
+  console.log(req.body);
+
+  const body = {
+    resourceType: "Patient",
+    id: resourceId,
+    name: req.body.name,
+    gender: req.body.gender,
+  };
+
+  const request = { name, requestBody: body };
+
+  const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
+    .update(request)
+    .then((v) => {
+      console.log(`Updated Patient resource:\n`, v.data);
       res.status(200).send(JSON.stringify(v.data));
     })
     .catch((e) => {
@@ -95,7 +125,7 @@ export const getPatientResource = async (req, res) => {
 };
 
 export const getPatientEverything = async (req, res) => {
-  const patientId = req.body.id;
+  const patientId = req.params.id;
   const name = parent.concat("/", patientId).trim();
   const request = { name };
 
@@ -127,7 +157,7 @@ export const deletePatientResource = async (req, res) => {
   // fails, the server returns a 200 OK HTTP status code. To check that the
   // resource was successfully deleted, search for or get the resource and
   // see if it exists.
-  await healthcare.projects.locations.datasets.fhirStores.fhir
+  const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
     .delete(request)
     .then((v) => {
       console.log("Deleted FHIR resource");
@@ -143,7 +173,7 @@ export const deletePatientResource = async (req, res) => {
 
 export const getAllEncounters = async (req, res) => {
   try {
-    const client = await auth.getClient();
+    // const client = await auth.getClient();
     const request = {
       parent: ogParent,
       resourceType: "Encounter",
@@ -155,8 +185,8 @@ export const getAllEncounters = async (req, res) => {
       );
 
     const encounters = response.data.entry.map((entry) => entry.resource);
-
-    res.status(204).send(JSON.stringify(encounters));
+    // console.log(encounters);
+    res.status(200).send(encounters);
   } catch (e) {
     console.log(e);
     res.status(500).send({

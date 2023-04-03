@@ -3,7 +3,9 @@ import {
   getPatientResource,
   deletePatientResource,
   getPatientEverything,
+  updatePatientResource,
   patchPatientResource,
+  getAllEncounters,
 } from "../controllers/patientController.js";
 import express from "express";
 
@@ -17,8 +19,11 @@ router
       getPatientResource(req, res);
     } else if (req.headers.function === "getEverything") {
       getPatientEverything(req, res);
+    } else if(req.headers.function === "getAllEncounters"){
+      getAllEncounters(req,res);
     }
   })
+  .put(updatePatientResource)
   .patch(patchPatientResource)
   .delete(deletePatientResource);
 

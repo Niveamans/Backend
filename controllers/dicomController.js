@@ -1,4 +1,5 @@
 import google from "@googleapis/healthcare";
+
 const healthcare = google.healthcare({
   version: "v1",
   auth: new google.auth.GoogleAuth({
@@ -14,26 +15,29 @@ const datasetId = "eHealthRecordDataset";
 const dicomStoreId = "myDicomStore";
 
 const parent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}`;
-
+const dicomWebPath = "studies";
 export async function uploadInstance(req, res) {
   try {
-    const instance = fs.readFileSync("C:Users/viswa/Downloads/0002.DCM");
+    const instance = fs.readFileSync(
+      "C:/Users/hari/Desktop/hackathon/backend/assets/dicom.dcm"
+    );
     const instanceBytes = Buffer.from(instance).toString("base64");
 
     const studyRequest = {
       parent: parent,
-      requestBody: {
-        patientId: "1234",
-        studyId: "5678",
-        startedTime: {
-          seconds: Math.floor(Date.now() / 1000),
-        },
-      },
+      dicomWebPath,
+      instanceBytes,
     };
 
     const study =
-      await healthcare.projects.locations.datasets.dicomStores.studies.createStudy(
-        studyRequest
+      await healthcare.projects.locations.datasets.dicomStores.storeInstancesStudy(
+        studyRequest,
+        {
+          headers: {
+            "Content-Type": "application/dicom",
+            Accept: "application/dicom+json",
+          },
+        }
       );
 
     const seriesParent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}/dicomWeb/studies/${study.data.studyId}`;

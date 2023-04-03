@@ -13,6 +13,8 @@ const ogParent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHea
 export const createEncounterResource = async (req, res) => {
   // only include status and subject
 
+  console.log(req.body);
+
   const { status, subject } = req.body;
 
   const encounter = {
@@ -47,10 +49,12 @@ export const updateEncounterResource = async (req, res) => {
   const resourceId = req.params.id;
   const name = parent.concat("/", resourceId).trim();
 
+  console.log(req.body);
+
   const body = {
     resourceType: "Encounter",
     id: resourceId,
-    status: "finished",
+    status: req.body.status,
   };
   const request = { name, requestBody: body };
 
