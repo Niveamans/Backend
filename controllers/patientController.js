@@ -147,7 +147,7 @@ export const getAllEncounters = async (req, res) => {
     const request = {
       parent: ogParent,
       resourceType: "Encounter",
-      query: `subject=Patient/${req.params.id}&_tag=encounter`,
+      query: `subject=Patient/${req.params.id}&_tag=Encounter`,
     };
     const response =
       await healthcare.projects.locations.datasets.fhirStores.fhir.search(

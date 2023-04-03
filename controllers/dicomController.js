@@ -32,7 +32,7 @@ export async function uploadInstance(req, res) {
     };
 
     const study =
-      await healthcare.projects.locations.datasets.dicomStores.studies.create(
+      await healthcare.projects.locations.datasets.dicomStores.studies.createStudy(
         studyRequest
       );
 
@@ -48,7 +48,7 @@ export async function uploadInstance(req, res) {
     };
 
     const series =
-      await healthcare.projects.locations.datasets.dicomStores.studies.series.create(
+      await healthcare.projects.locations.datasets.dicomStores.createSeries(
         seriesRequest
       );
 
