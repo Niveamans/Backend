@@ -49,10 +49,12 @@ export const updateEncounterResource = async (req, res) => {
   const resourceId = req.params.id;
   const name = parent.concat("/", resourceId).trim();
 
+  console.log(req.body);
+
   const body = {
     resourceType: "Encounter",
     id: resourceId,
-    status: "finished",
+    status: req.body.status,
   };
   const request = { name, requestBody: body };
 

@@ -38,6 +38,35 @@ export const createPatientResource = async (req, res) => {
     });
 };
 
+export const updatePatientResource = async (req, res) => {
+  const resourceId = req.params.id;
+  const name = parent.concat("/", resourceId).trim();
+
+  console.log(req.body);
+
+  const body = {
+    resourceType: "Patient",
+    id: resourceId,
+    name: req.body.name,
+    gender: req.body.gender,
+  };
+
+  const request = { name, requestBody: body };
+
+  const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
+    .update(request)
+    .then((v) => {
+      console.log(`Updated Patient resource:\n`, v.data);
+      res.status(200).send(JSON.stringify(v.data));
+    })
+    .catch((e) => {
+      console.log(e);
+      res.status(500).send({
+        message: "unknown error",
+      });
+    });
+};
+
 //The request must contain a JSON patch document, and the request headers must contain Content-Type: application/json-patch+json.
 
 export const patchPatientResource = async (req, res) => {
@@ -95,7 +124,7 @@ export const getPatientResource = async (req, res) => {
 };
 
 export const getPatientEverything = async (req, res) => {
-  const patientId = req.body.id;
+  const patientId = req.params.id;
   const name = parent.concat("/", patientId).trim();
   const request = { name };
 
@@ -127,7 +156,7 @@ export const deletePatientResource = async (req, res) => {
   // fails, the server returns a 200 OK HTTP status code. To check that the
   // resource was successfully deleted, search for or get the resource and
   // see if it exists.
-  await healthcare.projects.locations.datasets.fhirStores.fhir
+  const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
     .delete(request)
     .then((v) => {
       console.log("Deleted FHIR resource");
@@ -139,4 +168,28 @@ export const deletePatientResource = async (req, res) => {
         message: "unknown error",
       });
     });
+};
+
+export const getAllEncounters = async (req, res) => {
+  try {
+    // const client = await auth.getClient();
+    const request = {
+      parent: ogParent,
+      resourceType: "Encounter",
+      query: `subject=Patient/${req.params.id}&_tag=encounter`,
+    };
+    const response =
+      await healthcare.projects.locations.datasets.fhirStores.fhir.search(
+        request
+      );
+
+    const encounters = response.data.entry.map((entry) => entry.resource);
+    // console.log(encounters);
+    res.status(200).send(encounters);
+  } catch (e) {
+    console.log(e);
+    res.status(500).send({
+      message: "there was an unexpected error",
+    });
+  }
 };

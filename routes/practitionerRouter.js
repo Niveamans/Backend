@@ -2,6 +2,7 @@ import {
   createPractitionerResource,
   getPractitionerResource,
   deletePractitionerResource,
+  updatePractitionerResource,
   patchPractitionerResource,
 } from "../controllers/practitionerController.js";
 import express from "express";
@@ -18,6 +19,7 @@ router
       getAllPatientsOf(req, res);
     }
   })
+  .put(updatePractitionerResource)
   .patch(patchPractitionerResource)
   .delete(deletePractitionerResource);
 
