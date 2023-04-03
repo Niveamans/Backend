@@ -1,4 +1,6 @@
 import google from "@googleapis/healthcare";
+
+
 const healthcare = google.healthcare({
   version: "v1",
   auth: new google.auth.GoogleAuth({
@@ -13,27 +15,30 @@ const projectId = "ehealth-record-01";
 const datasetId = "eHealthRecordDataset";
 const dicomStoreId = "myDicomStore";
 
-const parent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}`;
 
+const parent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}`;
+const dicomWebPath = 'studies';
 export async function uploadInstance(req, res) {
+
   try {
-    const instance = fs.readFileSync("C:Users/viswa/Downloads/0002.DCM");
+  const instance = fs.readFileSync("C:/Users/hari/Desktop/hackathon/backend/assets/dicom.dcm");
     const instanceBytes = Buffer.from(instance).toString("base64");
 
     const studyRequest = {
       parent: parent,
-      requestBody: {
-        patientId: "1234",
-        studyId: "5678",
-        startedTime: {
-          seconds: Math.floor(Date.now() / 1000),
-        },
-      },
+      dicomWebPath,
+      instanceBytes,
+
     };
 
     const study =
-      await healthcare.projects.locations.datasets.dicomStores.studies.create(
-        studyRequest
+      await healthcare.projects.locations.datasets.dicomStores.storeInstances(
+        studyRequest,{
+          headers: {
+            'Content-Type': 'application/dicom',
+            Accept: 'application/dicom+json',
+          },
+        }
       );
 
     const seriesParent = `projects/${projectId}/locations/${cloudRegion}/datasets/${datasetId}/dicomStores/${dicomStoreId}/dicomWeb/studies/${study.data.studyId}`;
@@ -48,7 +53,7 @@ export async function uploadInstance(req, res) {
     };
 
     const series =
-      await healthcare.projects.locations.datasets.dicomStores.studies.series.create(
+      await healthcare.projects.locations.datasets.dicomStores.createSeries(
         seriesRequest
       );
 
@@ -85,6 +90,38 @@ export async function uploadInstance(req, res) {
     res.status(500).send({
       message: "unknown error occurred",
     });
+  }
+}
+
+//rewrite the study, series and instance according to the ones generated from the prev function
+
+const studyId = "5678";
+const seriesId = "5678";
+const instanceId = "91011";
+
+async function downloadInstance() {
+  try {
+    const instanceName = `${parent}/dicomWeb/studies/${studyId}/series/${seriesId}/instances/${instanceId}`;
+    const response =
+      await healthcare.projects.locations.datasets.dicomStores.dicomWeb.instances.retrieve(
+        {
+          name: instanceName,
+          alt: "media",
+        }
+      );
+
+    const contentDisposition = response.headers["content-disposition"];
+    const filenameMatch = contentDisposition.match(/filename="(.*?)"/);
+    const filename = filenameMatch ? filenameMatch[1] : "unnamed.dcm";
+    const instanceData = response.data;
+
+    // Save the instance data to a file
+    const fs = require("fs");
+    fs.writeFileSync(filename, instanceData, "binary");
+
+    console.log(`DICOM instance saved to ${filename}`);
+  } catch (error) {
+    console.error(error);
   }
 }
 
