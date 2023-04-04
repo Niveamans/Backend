@@ -4,6 +4,7 @@ import {
   deletePractitionerResource,
   updatePractitionerResource,
   patchPractitionerResource,
+  getAllPatientsOf,
 } from "../controllers/practitionerController.js";
 import express from "express";
 
