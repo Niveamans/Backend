@@ -33,12 +33,6 @@ export const createPractitionerResource = async (req, res) => {
       console.log(`Created practitioner resource with ID ${v.data.id}`);
       console.log(v.data);
       res.status(200).send(JSON.stringify(v.data));
-      const data = {
-        practitionerName: v.data.name[0].given[0],
-        practitionerGender: v.data.gender,
-        patients: [],
-      };
-      const response = await createPractitionerDocument(data, v.data.id);
     })
     .catch((e) => {
       console.log(e);
@@ -68,13 +62,6 @@ export const updatePractitionerResource = async (req, res) => {
     .then(async (v) => {
       console.log(`Updated Practitioner resource:\n`, v.data);
       res.status(200).send(JSON.stringify(v.data));
-
-      const data = {
-        practitionerName: v.data.name[0].given[0],
-        practitionerGender: v.data.gender,
-      };
-
-      const response = await updatePractitionerDocument(data, v.data.id);
     })
     .catch((e) => {
       console.log(e);
