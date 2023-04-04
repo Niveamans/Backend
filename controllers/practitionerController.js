@@ -1,4 +1,11 @@
 import google from "@googleapis/healthcare";
+import { GoogleAuth } from "google-auth-library";
+
+import {
+  createPractitionerDocument,
+  updatePractitionerDocument,
+  getDocument,
+} from "../firebase.js";
 const healthcare = google.healthcare({
   version: "v1",
   auth: new google.auth.GoogleAuth({
@@ -22,7 +29,7 @@ export const createPractitionerResource = async (req, res) => {
   const request = { parent: ogParent, type: "Practitioner", requestBody: body };
   const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
     .create(request)
-    .then((v) => {
+    .then(async (v) => {
       console.log(`Created practitioner resource with ID ${v.data.id}`);
       console.log(v.data);
       res.status(200).send(JSON.stringify(v.data));
@@ -44,24 +51,24 @@ export const updatePractitionerResource = async (req, res) => {
   const body = {
     resourceType: "Practitioner",
     id: resourceId,
-    name : req.body.name,
-    gender : req.body.gender
+    name: req.body.name,
+    gender: req.body.gender,
   };
 
-  const request = { name , requestBody : body};
+  const request = { name, requestBody: body };
 
   const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
-  .update(request)
-  .then((v)=>{
-    console.log(`Updated Practitioner resource:\n`,v.data);
-    res.status(200).send(JSON.stringify(v.data));
-  })
-  .catch((e)=>{
-    console.log(e);
-    res.status(500).send({
-      message : "unknown error",
+    .update(request)
+    .then(async (v) => {
+      console.log(`Updated Practitioner resource:\n`, v.data);
+      res.status(200).send(JSON.stringify(v.data));
     })
-  })
+    .catch((e) => {
+      console.log(e);
+      res.status(500).send({
+        message: "unknown error",
+      });
+    });
 };
 
 //The request must contain a JSON patch document, and the request headers must contain Content-Type: application/json-patch+json.
@@ -136,28 +143,3 @@ export const deletePractitionerResource = async (req, res) => {
       });
     });
 };
-
-// export const getAllPatientsOf = async (req, res) => {
-//   const patientIds = JSON.parse(req.body.patientIds)
-//     .map((id) => `'${id}'`)
-//     .join(",")
-//     .trim();
-
-//   const params = { "_id:in": `${patientIds}` };
-
-//   const client = await auth.getClient();
-//   const response = await client
-//     .request({ parent, method: "GET", params })
-//     .then((v) => {
-//       const resources = v.data.entry;
-//       console.log(`Resources found: ${resources.length}`);
-//       console.log(JSON.stringify(resources, null, 2));
-//       res.status(200).send(JSON.stringify(resources));
-//     })
-//     .catch((e) => {
-//       console.log(e);
-//       res.status(500).send({
-//         message: "unknown error",
-//       });
-//     });
-// };
