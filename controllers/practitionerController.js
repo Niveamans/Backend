@@ -1,11 +1,6 @@
 import google from "@googleapis/healthcare";
 import { GoogleAuth } from "google-auth-library";
 
-import {
-  createPractitionerDocument,
-  updatePractitionerDocument,
-  getDocument,
-} from "../firebase.js";
 const healthcare = google.healthcare({
   version: "v1",
   auth: new google.auth.GoogleAuth({
@@ -143,3 +138,48 @@ export const deletePractitionerResource = async (req, res) => {
       });
     });
 };
+
+export const getAllPatientsOf = async (req, res) => {
+  const auth = new GoogleAuth({
+    scopes: "https://www.googleapis.com/auth/cloud-platform",
+  });
+
+  const params = { "general-practitioner": `${req.params.id}` };
+  const url = `https://healthcare.googleapis.com/v1/projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Patient`;
+
+  const client = await auth.getClient();
+  const response = await client
+    .request({ url, method: "GET", params })
+    .then((v) => {
+      const resources = v.data.entry;
+      console.log(`Resources found: ${resources.length}`);
+      console.log(JSON.stringify(resources, null));
+      res.status(200).send(JSON.stringify(resources));
+    })
+    .catch((e) => {
+      console.log(e);
+      console.log(e.message);
+      res.status(500).send({
+        message: "unknown error",
+      });
+    });
+};
+
+// export const getAllPatients = async (req, res) => {
+//   //  console.log(auth);
+//   const pracId = req.query.prac;
+//   // console.log(patientId)
+//   const response = await fetch(
+//     `https://healthcare.googleapis.com/v1/projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Patient?general-practitioner=${pracId}`,
+//     {
+//       method: "GET",
+//       headers: {
+//         Authorization: `Bearer ${process.env.TOKEN}`,
+//       },
+//     }
+//   );
+//   const Js = await response.json();
+//   console.log(Js);
+//   res.status(200).json(Js);
+//   // console.log(process.env.TOKEN);
+// };
