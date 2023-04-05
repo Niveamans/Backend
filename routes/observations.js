@@ -2,6 +2,7 @@ import express from "express";
 import { getAllObservations,sendObservation,updateObservation,getObservation,deleteObservation } from "../controllers/observations.js";
 const Router = express.Router();
 
+
 Router.get("/",getAllObservations)
 Router.post("/",sendObservation)
 Router

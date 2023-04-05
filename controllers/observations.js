@@ -4,21 +4,7 @@ import dotenv from "dotenv";
 import { observationBody,ObservationPatchBody } from "../data.js";
 dotenv.config()
 
-// const auth =  google.auth.getAccessToken()
 
-
-
-// const healthcare = google.healthcare({
-//   version: "v1",
-//   auth: new google.auth.GoogleAuth({
-//     scopes: ["https://www.googleapis.com/auth/cloud-platform"],
-//   }),
-//   headers: { "Content-Type": "application/fhir+json" },
-// });
-
-// const Autor = new google.auth.GoogleAuth({
-//   scopes: ["https://www.googleapis.com/auth/cloud-platform"],
-// })
 
 
 // const body = {
@@ -39,42 +25,50 @@ dotenv.config()
 //     "resourceType": "Encounter"
 //   }
 
-const body1={
+const patientbody= {
   "name": [
-  {
-  "use": "official",
-  "family": "Smith",
-  "given": [
-  "Darcy"
-  ]
-  }
+    {
+      "use": "official",
+      "family": "Smith",
+      "given": [
+        "Darcy"
+      ]
+    }
   ],
   "gender": "female",
   "birthDate": "1970-01-01",
-  "resourceType": "Patient"
-  }
+  "resourceType": "Patient",
+  "generalPractitioner" : [{ "reference": "Practitioner/956533b9-846b-41c6-8e92-5816a74256d4" }]
+}
 
+
+// "generalPractitioner" : [{ "reference": "Practitioner/956533b9-846b-41c6-8e92-5816a74256d4" }],
   // 'Content-Type': 'application/fhir+json; charset=utf-8'
 
 // id:a364e9f8-dd8b-460a-900b-5b905f0a0d3d
 // const query = Patient?family:exact=Smith
 
-export const getAllObservations = async( req, res)=>{
-//  console.log(auth);
-  const response = await fetch(`https://healthcare.googleapis.com/v1/projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Observation`, {
-    method: 'GET',
-    headers: {
-        'Authorization': `Bearer ${process.env.TOKEN}`,
-        
-    },
-});
-const Js = await response.json()
-console.log(Js)
-res.status(200).json(Js);
-  console.log(process.env.TOKEN);
-  // res.send("hi");
 
-}
+
+
+export const getAllObservations = async( req, res)=>{
+
+    const encounterId = req.query.encounter;
+    // console.log(patientId)
+    const response = await fetch(`https://healthcare.googleapis.com/v1/projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Observation?encounter=${encounterId}`, {
+      method: 'GET',
+      headers: {
+          'Authorization': `Bearer ${process.env.TOKEN}`,
+          
+      },
+  });
+  const Js = await response.json()
+  console.log(Js)
+  res.status(200).json(Js);
+    // console.log(process.env.TOKEN);
+    
+  
+  }
 
 export const getObservation = async( req, res)=>{
   
@@ -105,7 +99,7 @@ export const sendObservation = async(req,res)=>{
         'Authorization': `Bearer ${process.env.TOKEN}`,
         'Content-Type': 'application/fhir+json; charset=utf-8'
     },
-    body: body4,
+    body: body3,
 });
     const Js = await response.json()
     console.log(Js)
