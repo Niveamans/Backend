@@ -8,6 +8,7 @@ import patientRouter from "./routes/patientRouter.js";
 import practitionerRouter from "./routes/practitionerRouter.js";
 import encounterRouter from "./routes/encounterRouter.js";
 import ObservationRouter from "./routes/observationRouter.js";
+
 // import dicomRouter from "./routes/dicomRouter.js";
 
 /* CONFIGURATIONS */
@@ -29,6 +30,7 @@ app.use("/practitioners", practitionerRouter);
 app.use("/encounters", encounterRouter);
 // app.use("/dicom", dicomRouter);
 app.use("/observations", ObservationRouter);
+
 app.listen(3000, () => {
   console.log("server is running on port 3000");
 });

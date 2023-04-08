@@ -1,10 +1,10 @@
 import express from "express";
-import { getAllObservations,sendObservation,updateObservation,getObservation,deleteObservation } from "../controllers/observations.js";
+import {getObservation,updateObservation,deleteObservation,getAllObservations,createObservation} from "../controllers/observationcntroller.js"
 const Router = express.Router();
 
 
 Router.get("/",getAllObservations)
-Router.post("/",sendObservation)
+Router.post("/",createObservation)
 Router
 .route("/:id")
 .put(updateObservation)
