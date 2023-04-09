@@ -1,7 +1,7 @@
 import express from "express";
 import {
   getAllObservations,
-  sendObservation,
+  createObservation,
   updateObservation,
   getObservation,
   deleteObservation,
@@ -9,7 +9,7 @@ import {
 const Router = express.Router();
 
 Router.get("/", getAllObservations);
-Router.post("/", sendObservation);
+Router.post("/", createObservation);
 Router.route("/:id")
   .put(updateObservation)
   .get(getObservation)
