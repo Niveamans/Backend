@@ -112,3 +112,25 @@ export const getAllObservations = async (req, res) => {
 
   
   };
+
+  export const getAllEncounters = async (req, res) => {
+    const url = `https://healthcare.googleapis.com/v1/projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Encounter`
+    try {
+      const params = {'patient':req.query.patient}
+    
+      const response = await client.request({url, method: 'GET', params})
+    
+      const resources = response.data.entry;
+      console.log(`Resources found: ${resources.length}`);
+      console.log(JSON.stringify(resources, null, 2));
+      res.status(200).json(resources);
+    
+      
+    } catch (error) {
+      console.log(error);
+    }
+  
+    
+    };
+  
+  
