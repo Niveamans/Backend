@@ -1,6 +1,9 @@
 import google from "@googleapis/healthcare";
 import { GoogleAuth } from "google-auth-library";
 
+import fetch from "node-fetch";
+import dotenv from "dotenv";
+dotenv.config();
 const healthcare = google.healthcare({
   version: "v1",
   auth: new google.auth.GoogleAuth({
@@ -79,7 +82,7 @@ export const updatePatientResource = async (req, res) => {
     generalPractitioner: req.body.generalPractitioner,
   };
 
-  const request = { name, requestBody: body };
+  const request = { name, requestBody: req.body };
 
   const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
     .update(request)
@@ -199,25 +202,42 @@ export const deletePatientResource = async (req, res) => {
 };
 
 export const getAllEncounters = async (req, res) => {
-  try {
-    // const client = await auth.getClient();
-    const request = {
-      parent: ogParent,
-      resourceType: "Encounter",
-      query: `subject=Patient/${req.params.id}&_tag=Encounter`,
-    };
-    const response =
-      await healthcare.projects.locations.datasets.fhirStores.fhir.search(
-        request
-      );
+  // try {
+  //   // const client = await auth.getClient();
+  //   const request = {
+  //     parent: ogParent,
+  //     resourceType: "Encounter",
+  //     query: `subject=Patient/${req.params.id}&_tag=Encounter`,
+  //   };
+  //   const response =
+  //     await healthcare.projects.locations.datasets.fhirStores.fhir.search(
+  //       request
+  //     );
 
-    const encounters = response.data.entry.map((entry) => entry.resource);
-    // console.log(encounters);
-    res.status(200).send(encounters);
-  } catch (e) {
-    console.log(e);
-    res.status(500).send({
-      message: "there was an unexpected error",
-    });
-  }
+  //   const encounters = response.data.entry.map((entry) => entry.resource);
+  //   // console.log(encounters);
+  //   res.status(200).send(encounters);
+  // } catch (e) {
+  //   console.log(e);
+  //   res.status(500).send({
+  //     message: "there was an unexpected error",
+  //   });
+  // }
+
+  //  console.log(auth);
+  const patientId = req.params.id;
+  // console.log(patientId)
+  const response = await fetch(
+    `https://healthcare.googleapis.com/v1/projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Encounter?patient=${patientId}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${process.env.TOKEN}`,
+      },
+    }
+  );
+  const Js = await response.json();
+  console.log(Js);
+  res.status(200).json(Js);
+  // console.log(process.env.TOKEN);
 };
