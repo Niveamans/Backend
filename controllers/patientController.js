@@ -1,7 +1,9 @@
 import google from "@googleapis/healthcare";
-import fetch from 'node-fetch';
+import { GoogleAuth } from "google-auth-library";
+
+import fetch from "node-fetch";
 import dotenv from "dotenv";
-dotenv.config()
+dotenv.config();
 const healthcare = google.healthcare({
   version: "v1",
   auth: new google.auth.GoogleAuth({
@@ -9,8 +11,6 @@ const healthcare = google.healthcare({
   }),
   headers: { "Content-Type": "application/fhir+json" },
 });
-
-
 
 const parent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Patient`;
 const ogParent = `projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore`;
@@ -43,6 +43,30 @@ export const createPatientResource = async (req, res) => {
     });
 };
 
+export const getAllPatients = async (req, res) => {
+  const request = { name: parent };
+
+  const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
+    .read(request)
+    .then((v) => {
+      console.log(v.data.entry);
+
+      const result = [];
+
+      v.data.entry.map((entry) => {
+        result.push(entry.resource);
+      });
+
+      res.status(200).send(JSON.stringify(result));
+    })
+    .catch((e) => {
+      console.log(e);
+      res.status(500).send({
+        message: "unknown error",
+      });
+    });
+};
+
 export const updatePatientResource = async (req, res) => {
   const resourceId = req.params.id;
   const name = parent.concat("/", resourceId).trim();
@@ -52,9 +76,10 @@ export const updatePatientResource = async (req, res) => {
   const body = {
     resourceType: "Patient",
     id: resourceId,
+    birthDate: req.body.birthDate,
     name: req.body.name,
     gender: req.body.gender,
-    birthDate : req.body.birthDate,
+    generalPractitioner: req.body.generalPractitioner,
   };
 
   const request = { name, requestBody: req.body };
@@ -199,27 +224,20 @@ export const getAllEncounters = async (req, res) => {
   //   });
   // }
 
-
-    //  console.log(auth);
-      const patientId = req.params.id;
-      // console.log(patientId)
-      const response = await fetch(`https://healthcare.googleapis.com/v1/projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Encounter?patient=${patientId}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${process.env.TOKEN}`,
-            
-        },
-    });
-    const Js = await response.json()
-    console.log(Js)
-    res.status(200).json(Js);
-      // console.log(process.env.TOKEN);
-    
-    
-    
-
-
-
-
-
+  //  console.log(auth);
+  const patientId = req.params.id;
+  // console.log(patientId)
+  const response = await fetch(
+    `https://healthcare.googleapis.com/v1/projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Encounter?patient=${patientId}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${process.env.TOKEN}`,
+      },
+    }
+  );
+  const Js = await response.json();
+  console.log(Js);
+  res.status(200).json(Js);
+  // console.log(process.env.TOKEN);
 };
