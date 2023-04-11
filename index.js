@@ -31,6 +31,11 @@ app.use("/encounters", encounterRouter);
 // app.use("/dicom", dicomRouter);
 app.use("/observations", ObservationRouter);
 
-app.listen(3000, () => {
-  console.log("server is running on port 3000");
+app.get("/",(req,res)=>{
+  res.send("welcome to niveamens server");
+})
+
+
+app.listen(8080, () => {
+  console.log("server is running on port 8080");
 });
