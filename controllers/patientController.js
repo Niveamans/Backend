@@ -21,11 +21,7 @@ export const createPatientResource = async (req, res) => {
   console.log(name);
 
   // create.
-  const body = {
-    name: name,
-    gender: gender,
-    resourceType: "Patient",
-  };
+  const body = req.body
 
   const request = { parent: ogParent, type: "Patient", requestBody: body };
   const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
