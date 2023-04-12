@@ -21,11 +21,7 @@ export const createPatientResource = async (req, res) => {
   console.log(name);
 
   // create.
-  const body = {
-    name: name,
-    gender: gender,
-    resourceType: "Patient",
-  };
+  const body = req.body;
 
   const request = { parent: ogParent, type: "Patient", requestBody: body };
   const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
@@ -82,7 +78,7 @@ export const updatePatientResource = async (req, res) => {
     generalPractitioner: req.body.generalPractitioner,
   };
 
-  const request = { name, requestBody: req.body };
+  const request = { name, requestBody: body };
 
   const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
     .update(request)
@@ -91,7 +87,7 @@ export const updatePatientResource = async (req, res) => {
       res.status(200).send(JSON.stringify(v.data));
     })
     .catch((e) => {
-      console.log(e);
+      console.log(e.message);
       res.status(500).send({
         message: "unknown error",
       });
