@@ -1,4 +1,6 @@
 import google from "@googleapis/healthcare";
+import { GoogleAuth } from "google-auth-library";
+
 const healthcare = google.healthcare({
   version: "v1",
   auth: new google.auth.GoogleAuth({
@@ -15,18 +17,22 @@ export const createEncounterResource = async (req, res) => {
 
   console.log(req.body);
 
-  const { status, subject } = req.body;
+  const { status, subject , start, end} = req.body;
 
   const encounter = {
     status: status,
     subject: subject,
     resourceType: "Encounter",
+    period : {
+      start : start,
+      end : end,
+    }
   };
 
   const request = {
     parent: ogParent,
     type: "Encounter",
-    requestBody: encounter,
+    requestBody: req.body,
   };
 
   const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
@@ -140,3 +146,29 @@ export const deleteEncounterResource = async (req, res) => {
       });
     });
 };
+
+export const getAllObservationsOf = async(req,res)=>{
+  const auth = new GoogleAuth({
+    scopes : ['https://www.googleapis.com/auth/cloud-platform']
+  })
+
+  const params = {"encounter":`${req.params.id}`};
+  const url = `https://healthcare.googleapis.com/v1/projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Observation`;
+
+  const client = await auth.getClient();
+  const response = await client
+    .request({ url, method: "GET", params })
+    .then((v) => {
+      const resources = v.data.entry;
+      console.log(`Observations found: ${resources.length}`);
+      console.log(JSON.stringify(resources, null));
+      res.status(200).send(JSON.stringify(resources));
+    })
+    .catch((e) => {
+      console.log(e);
+      console.log(e.message);
+      res.status(500).send({
+        message: "unknown error",
+      });
+    });
+} 
