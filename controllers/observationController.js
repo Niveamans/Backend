@@ -7,7 +7,7 @@ const auth = new GoogleAuth({
 
 
 const url = `https://healthcare.googleapis.com/v1/projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Observation`;
-const client = await auth.getClient();
+const client = auth.getClient();
 
 export const createObservation = async (req, res) => {
   try {
