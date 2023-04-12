@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AMC-website/Backend.git"
+    "url": "git+https://github.com/Niveamans/backend.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/AMC-website/Backend/issues"
+    "url": "https://github.com/Niveamans/backend/issues"
   },
-  "homepage": "https://github.com/AMC-website/Backend#readme",
+  "homepage": "https://github.com/Niveamans/backend#readme",
   "dependencies": {
     "@google-cloud/storage": "^6.9.4",
     "@googleapis/healthcare": "^6.0.2",
