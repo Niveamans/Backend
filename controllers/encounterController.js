@@ -17,22 +17,22 @@ export const createEncounterResource = async (req, res) => {
 
   console.log(req.body);
 
-  const { status, subject , start, end} = req.body;
+  const { status, subject, start, end } = req.body;
 
   const encounter = {
     status: status,
     subject: subject,
     resourceType: "Encounter",
-    period : {
-      start : start,
-      end : end,
-    }
+    period: {
+      start: start,
+      end: end,
+    },
   };
 
   const request = {
     parent: ogParent,
     type: "Encounter",
-    requestBody: req.body,
+    requestBody: encounter,
   };
 
   const resource = await healthcare.projects.locations.datasets.fhirStores.fhir
@@ -147,12 +147,12 @@ export const deleteEncounterResource = async (req, res) => {
     });
 };
 
-export const getAllObservationsOf = async(req,res)=>{
+export const getAllObservationsOf = async (req, res) => {
   const auth = new GoogleAuth({
-    scopes : ['https://www.googleapis.com/auth/cloud-platform']
-  })
+    scopes: ["https://www.googleapis.com/auth/cloud-platform"],
+  });
 
-  const params = {"encounter":`${req.params.id}`};
+  const params = { encounter: `${req.params.id}` };
   const url = `https://healthcare.googleapis.com/v1/projects/ehealth-record-01/locations/asia-south1/datasets/eHealthRecordDataset/fhirStores/myFhirStore/fhir/Observation`;
 
   const client = await auth.getClient();
@@ -171,4 +171,4 @@ export const getAllObservationsOf = async(req,res)=>{
         message: "unknown error",
       });
     });
-} 
+};
